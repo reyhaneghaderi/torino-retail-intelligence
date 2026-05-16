@@ -1,9 +1,9 @@
 from pathlib import Path
+import json
 
 import streamlit as st
-import geopandas as gpd
+import pandas as pd
 import plotly.express as px
-from shapely import wkb
 
 
 # -----------------------------
@@ -26,34 +26,40 @@ st.markdown(
 @st.cache_data
 def load_data():
     base_dir = Path(__file__).resolve().parents[1]
-    geo_path = base_dir / "data" / "processed" / "torino_quartieri_opportunity.geojson"
 
-    geo = gpd.read_file(geo_path)
-
-    # Rename columns
-    geo = geo.rename(columns={
-        "ID_QUART": "quartiere_id",
-        "DENOM": "quartiere_name",
-        "n_somministrazione": "total_somministrazione"
-    })
-
-    # Force geometry to 2D
-    geo["geometry"] = geo.geometry.apply(
-        lambda geom: wkb.loads(wkb.dumps(geom, output_dimension=2))
+    score_path = base_dir / "data" / "processed" / "fact_retail_score.csv"
+    dim_path = base_dir / "data" / "processed" / "dim_quartiere.csv"
+    geojson_path = (
+        base_dir
+        / "data"
+        / "processed"
+        / "maps"
+        / "torino_quartieri_opportunity.geojson"
     )
 
-    # Make sure CRS is latitude/longitude
-    if geo.crs is None:
-        geo = geo.set_crs(epsg=4326)
+    score = pd.read_csv(score_path)
+    dim_quartiere = pd.read_csv(dim_path)
 
-    if geo.crs.to_epsg() != 4326:
-        geo = geo.to_crs(epsg=4326)
+    with open(geojson_path, "r", encoding="utf-8") as f:
+        geojson = json.load(f)
 
-    # Make sure ID is integer
-    geo["quartiere_id"] = geo["quartiere_id"].astype(int)
+    score["quartiere_id"] = score["quartiere_id"].astype(int)
+    dim_quartiere["quartiere_id"] = dim_quartiere["quartiere_id"].astype(int)
 
-    # If opportunity_level does not exist, create it
-    if "opportunity_level" not in geo.columns:
+    # Add quartiere_name from dim_quartiere
+    score = score.merge(
+        dim_quartiere[["quartiere_id", "quartiere_name"]],
+        on="quartiere_id",
+        how="left"
+    )
+
+    # If some names are missing, create fallback names
+    score["quartiere_name"] = score["quartiere_name"].fillna(
+        "Quartiere " + score["quartiere_id"].astype(str)
+    )
+
+    # Create opportunity_level if missing
+    if "opportunity_level" not in score.columns:
         def classify_opportunity(x):
             if x >= 0.20:
                 return "Very High Opportunity"
@@ -66,12 +72,14 @@ def load_data():
             else:
                 return "Very Low Opportunity"
 
-        geo["opportunity_level"] = geo["retail_opportunity_score"].apply(classify_opportunity)
+        score["opportunity_level"] = score["retail_opportunity_score"].apply(
+            classify_opportunity
+        )
 
-    return geo
+    return score, geojson
 
 
-geo = load_data()
+score, geojson = load_data()
 
 
 # -----------------------------
@@ -101,7 +109,7 @@ st.sidebar.header("Filters")
 
 available_levels = [
     level for level in level_order
-    if level in geo["opportunity_level"].dropna().unique()
+    if level in score["opportunity_level"].dropna().unique()
 ]
 
 selected_levels = st.sidebar.multiselect(
@@ -110,15 +118,17 @@ selected_levels = st.sidebar.multiselect(
     default=available_levels
 )
 
-filtered_geo = geo[geo["opportunity_level"].isin(selected_levels)].copy()
+filtered_score = score[
+    score["opportunity_level"].isin(selected_levels)
+].copy()
 
 
 # -----------------------------
 # KPI cards
 # -----------------------------
-total_activities = int(filtered_geo["total_somministrazione"].sum())
-total_population = int(filtered_geo["total_population"].sum())
-avg_stores = filtered_geo["stores_per_1000_residents"].mean()
+total_activities = int(filtered_score["total_somministrazione"].sum())
+total_population = int(filtered_score["total_population"].sum())
+avg_stores = filtered_score["stores_per_1000_residents"].mean()
 
 col1, col2, col3 = st.columns(3)
 
@@ -149,7 +159,7 @@ with tab1:
     with left_col:
         st.subheader("Retail Opportunity Score by Quartiere")
 
-        chart_data = filtered_geo.drop(columns="geometry").sort_values(
+        chart_data = filtered_score.sort_values(
             "retail_opportunity_score",
             ascending=True
         )
@@ -192,7 +202,7 @@ with tab1:
             "opportunity_level"
         ]
 
-        table_data = filtered_geo.drop(columns="geometry")[display_cols].sort_values(
+        table_data = filtered_score[display_cols].sort_values(
             "retail_opportunity_score",
             ascending=False
         )
@@ -213,20 +223,13 @@ with tab2:
         "Green quartieri indicate stronger opportunity. Red quartieri indicate weaker opportunity."
     )
 
-    map_data = filtered_geo.copy()
-
-    # Important: reset index and create a stable feature ID
-    map_data = map_data.reset_index(drop=True)
-    map_data["feature_id"] = map_data.index.astype(str)
-
-    # Use GeoDataFrame interface for Plotly
-    geojson = map_data.__geo_interface__
+    map_data = filtered_score.copy()
 
     fig_map = px.choropleth_mapbox(
         map_data,
         geojson=geojson,
-        locations="feature_id",
-        featureidkey="properties.feature_id",
+        locations="quartiere_id",
+        featureidkey="properties.ID_QUART",
         color="opportunity_level",
         color_discrete_map=level_colors,
         hover_name="quartiere_name",
@@ -237,7 +240,7 @@ with tab2:
             "stores_per_1000_residents": ":.2f",
             "distance_to_nearest_metro": ":.0f",
             "retail_opportunity_score": ":.3f",
-            "feature_id": False
+            "quartiere_id": False
         },
         mapbox_style="carto-positron",
         center={"lat": 45.0703, "lon": 7.6869},
@@ -261,3 +264,4 @@ with tab2:
         Higher scores indicate stronger potential for food-service expansion.
         """
     )
+    
