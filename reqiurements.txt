@@ -1,0 +1,12 @@
+streamlit
+pandas
+numpy
+geopandas
+shapely
+pyproj
+fiona
+matplotlib
+plotly
+streamlit
+sqlalchemy
+psycopg2-binary
