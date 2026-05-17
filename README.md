@@ -84,9 +84,6 @@ Medium Opportunity
 Low Opportunity
 Very Low Opportunity
     
-
-# Business Value
-# recommendation
 # Dashboard and Streamlit app
 # Results and insights
 ## Folder structure
@@ -129,7 +126,10 @@ torino-retail-intelligence/
 └── LICENSE
 
 
-## Future improvements
+
+
+
+# Future improvements
 Possible improvements include:
 
 - Adding rental price data
@@ -140,7 +140,9 @@ Possible improvements include:
 - Improving the map with more detailed spatial layers
 - Adding predictive modeling for retail expansion potential
 
-## Project Status
+
+
+# Project Status
 The project demonstrates skills in:
 
 - Data cleaning
