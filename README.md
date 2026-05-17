@@ -127,8 +127,10 @@ torino-retail-intelligence/
 ├── requirements.txt
 ├── README.md
 └── LICENSE
-# Future improvements
-possible improvements include:
+
+
+## Future improvements
+Possible improvements include:
 
 - Adding rental price data
 - Adding pedestrian traffic data
