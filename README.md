@@ -67,25 +67,21 @@ The retail opportunity score is based on three main factors:
    Measured as the number of food-service activities per 1,000 residents.
 
 3. **Metro accessibility**  
-   Measured as the distance from each quartiere to the nearest metro station.
-
-The final score increases with population and decreases with higher competition and longer distance from metro access.
 
 ```text
 retail_opportunity_score =
 0.45 × normalized_population
 - 0.35 × normalized_competition
 - 0.20 × normalized_distance_to_metro
-...
+```
 
+## Opportunity Levels
 
-## Opportunity levels are classified as:
-
-Very High Opportunity
-High Opportunity
-Medium Opportunity
-Low Opportunity
-Very Low Opportunity
+- Very High Opportunity
+- High Opportunity
+- Medium Opportunity
+- Low Opportunity
+- Very Low Opportunity
     
 # Dashboard and Streamlit app
 ##Results and insights
