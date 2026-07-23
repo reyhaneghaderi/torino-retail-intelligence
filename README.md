@@ -84,7 +84,7 @@ retail_opportunity_score =
 - Very Low Opportunity
     
 # Dashboard and Streamlit app
-##Results and insights
+## Results and Insights
 
 
 ## Folder structure
