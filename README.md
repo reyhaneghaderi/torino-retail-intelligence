@@ -56,42 +56,74 @@ The project follows an end-to-end data analytics workflow:
 9. Power BI dashboard design
 10. Streamlit web app deployment
 
+    
 ## Opportunity Score Methodology
 
-The retail opportunity score is based on three main factors:
+The retail opportunity score combines three factors:
 
 1. **Population demand**  
-   Quartieri with higher population are considered more attractive.
+   Quartieri with a larger population receive a higher demand score.
 
 2. **Competition intensity**  
-   Measured as the number of food-service activities per 1,000 residents.
+   Competition is measured using the number of food-service businesses per 1,000 residents.
 
 3. **Metro accessibility**  
+   Accessibility is measured using the distance to the nearest metro station.
+
+The final score is calculated as:
 
 ```text
-retail_opportunity_score =
-0.45 × normalized_population
-- 0.35 × normalized_competition
-- 0.20 × normalized_distance_to_metro
+Retail Opportunity Score =
+    0.45 × Normalized Population
+  - 0.35 × Normalized Competition
+  - 0.20 × Normalized Distance to Metro
 ```
 
-## Opportunity Levels
+A higher score represents stronger estimated potential for food-service retail expansion.
+
+### Opportunity Levels
+
+The final scores are grouped into five categories:
 
 - Very High Opportunity
 - High Opportunity
 - Medium Opportunity
 - Low Opportunity
 - Very Low Opportunity
-    
-# Dashboard and Streamlit app
+
+## Dashboard and Streamlit Application
+
+The project includes two interfaces:
+
+- A **Streamlit application** for interactive map exploration and quartiere comparison
+- A **Power BI dashboard** for business-level reporting and visual analysis
+
+[Open the live Streamlit application](https://torino-retail-intelligence-p96wwxmtfxkeuxptj9p5hx.streamlit.app)
+
 ## Results and Insights
 
+The analysis produces:
 
-## Folder structure
+- A retail opportunity score for every quartiere
+- Competition density per 1,000 residents
+- Population-demand indicators
+- Distance-to-metro indicators
+- Opportunity-level classifications
+- An interactive geospatial map
+
+The model should be interpreted as a decision-support tool rather than a guarantee of business success. Rental costs, pedestrian traffic, household income and commercial-property availability are not currently included.
+
+## Project Structure
+
+```text
 torino-retail-intelligence/
 │
 ├── app/
 │   └── streamlit_app.py
+│
+├── dashboard/
+│   ├── Turin_Retail_Opportunity_Dashboard.pbix
+│   └── Map Analysis.pbix
 │
 ├── data/
 │   ├── raw/
@@ -100,10 +132,6 @@ torino-retail-intelligence/
 │       ├── dim_quartiere.csv
 │       └── maps/
 │           └── torino_quartieri_opportunity.geojson
-│
-├── dashboard/
-│   ├── Turin_Retail_Opportunity_Dashboard.pbix
-│   └── Map Analysis.pbix
 │
 ├── docs/
 │   └── data_dictionary.md
@@ -125,30 +153,87 @@ torino-retail-intelligence/
 ├── requirements.txt
 ├── README.md
 └── LICENSE
+```
 
+## Run the Project Locally
 
+Clone the repository:
 
+```bash
+git clone https://github.com/reyhaneghaderi/torino-retail-intelligence.git
+cd torino-retail-intelligence
+```
 
+Create a virtual environment:
 
-# Future improvements
+```bash
+python -m venv .venv
+```
+
+Activate it on Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+Install the dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Start the Streamlit application:
+
+```bash
+streamlit run app/streamlit_app.py
+```
+
+## Data Sources
+
+The project uses open data related to Turin:
+
+- Commercial activities on private premises
+- Population by sex and quartiere
+- Turin metro station locations
+- Quartiere geographic boundaries
+
+Commercial activities were filtered to focus on food-service businesses classified as `somministrazione`.
+
+## Limitations
+
+The opportunity score is based on available public data and a manually defined weighting system.
+
+Current limitations include:
+
+- No commercial rental-price information
+- No pedestrian-footfall data
+- No household-income information
+- No historical business opening and closure data
+- Metro access is only one component of overall accessibility
+- The score has not been validated against actual business profitability
+
+## Future Improvements
+
 Possible improvements include:
 
-- Adding rental price data
-- Adding pedestrian traffic data
-- Including income level by neighborhood
-- Adding business opening and closure trends
-- Comparing multiple retail categories beyond food-service activities
-- Improving the map with more detailed spatial layers
-- Adding predictive modeling for retail expansion potential
+- Adding commercial rental-price data
+- Adding pedestrian-traffic information
+- Including income indicators by quartiere
+- Analysing business openings and closures over time
+- Comparing different types of retail activities
+- Testing alternative score weights
+- Adding sensitivity analysis
+- Adding predictive modelling when sufficient historical data becomes available
+
+## Skills Demonstrated
+
+- Python data cleaning and transformation
+- Geospatial data analysis
+- Feature engineering
+- PostgreSQL database modelling
+- SQL analysis
+- Power BI dashboard development
+- Streamlit application deployment
+- Business-oriented analytical reporting
 
 
-
-# Project Status
-The project demonstrates skills in:
-
-- Data cleaning
-- Geospatial analysis
-- SQL database modeling
-- Dashboard design
-- Streamlit app deployment
-- End-to-end data analytics workflow
