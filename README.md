@@ -77,8 +77,7 @@ retail_opportunity_score =
 - 0.35 × normalized_competition
 - 0.20 × normalized_distance_to_metro
 
-
-## Opportunity levels are classified as:
+ ## Opportunity levels are classified as:
 
 Very High Opportunity
 High Opportunity
